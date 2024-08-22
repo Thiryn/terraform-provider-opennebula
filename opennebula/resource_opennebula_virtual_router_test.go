@@ -714,7 +714,6 @@ resource "opennebula_virtual_router" "test" {
 
 resource "opennebula_virtual_router_nic" "nic_IP_specified" {
   depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
-  ip 				= "172.16.100.187"
   virtual_router_id = opennebula_virtual_router.test.id
   network_id        = opennebula_virtual_network.network4.id
 }
