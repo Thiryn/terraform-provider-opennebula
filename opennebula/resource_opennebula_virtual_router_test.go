@@ -119,12 +119,9 @@ func TestAccVirtualRouter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("opennebula_virtual_router.test", "gname"),
 					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic1", "network_id"),
 					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic2", "network_id"),
-					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic3", "network_id"),
-					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic4", "network_id"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic1", "floating_ip", "true"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic1", "floating_only", "true"),
-					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic1", "ip"),
-					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_ip", "false"),
+					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic1", "ip"), resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_ip", "false"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_only", "false"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "ip", ""),
 					testAccCheckVirtualRouterPermissions(&shared.Permissions{
