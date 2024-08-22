@@ -1694,8 +1694,8 @@ func resourceOpennebulaVirtualNetworkDelete(ctx context.Context, d *schema.Resou
 	}
 	log.Printf("[INFO] Successfully released reservered IP addresses.")
 
-	vn, _ := vnc.Info(true)
-	log.Printf("[INFO] VNDEBUG %v", vn)
+	vnet, _ := vnc.Info(true)
+	log.Printf("[INFO] VNDEBUG %v", vnet)
 
 	err = vnc.Delete()
 	if err != nil {
