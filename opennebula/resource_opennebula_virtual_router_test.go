@@ -121,7 +121,8 @@ func TestAccVirtualRouter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic2", "network_id"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic1", "floating_ip", "true"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic1", "floating_only", "true"),
-					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic1", "ip"), resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_ip", "false"),
+					resource.TestCheckResourceAttrSet("opennebula_virtual_router_nic.nic1", "ip"),
+					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_ip", "false"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "floating_only", "false"),
 					resource.TestCheckResourceAttr("opennebula_virtual_router_nic.nic2", "ip", ""),
 					testAccCheckVirtualRouterPermissions(&shared.Permissions{
@@ -619,14 +620,14 @@ resource "opennebula_virtual_router" "test" {
 }
 
 resource "opennebula_virtual_router_nic" "nic_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.181"
   virtual_router_id = opennebula_virtual_router.test.id
   network_id        = opennebula_virtual_network.network4.id
 }
 
 resource "opennebula_virtual_router_nic" "nic_floating_only_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.182"
   floating_ip		= true
   floating_only		= true
@@ -635,7 +636,7 @@ resource "opennebula_virtual_router_nic" "nic_floating_only_IP_specified" {
 }
 
 resource "opennebula_virtual_router_nic" "nic_floating_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.183"
   floating_ip		= true
   virtual_router_id = opennebula_virtual_router.test.id
@@ -668,14 +669,14 @@ resource "opennebula_virtual_router" "test" {
 }
 
 resource "opennebula_virtual_router_nic" "nic_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.187"
   virtual_router_id = opennebula_virtual_router.test.id
   network_id        = opennebula_virtual_network.network4.id
 }
 
 resource "opennebula_virtual_router_nic" "nic_floating_only_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.186"
   floating_ip		= true
   floating_only		= true
@@ -684,7 +685,7 @@ resource "opennebula_virtual_router_nic" "nic_floating_only_IP_specified" {
 }
 
 resource "opennebula_virtual_router_nic" "nic_floating_IP_specified" {
-  depends_on        = [opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
+  depends_on        = [opennebula_virtual_router.test, opennebula_virtual_router_instance.test, opennebula_virtual_network.network4]
   ip 				= "172.16.100.185"
   floating_ip		= true
   virtual_router_id = opennebula_virtual_router.test.id
