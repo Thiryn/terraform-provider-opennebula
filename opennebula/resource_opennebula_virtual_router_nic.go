@@ -208,6 +208,7 @@ func resourceOpennebulaVirtualRouterNICRead(ctx context.Context, d *schema.Resou
 	network, _ := nic.Get(shared.Network)
 	model, _ := nic.Get(shared.Model)
 	virtioQueues, _ := nic.GetStr("VIRTIO_QUEUES")
+	ip, _ := nic.Get("VROUTER_IP")
 
 	sg := make([]int, 0)
 	securityGroupsArray, _ := nic.Get(shared.SecurityGroups)
