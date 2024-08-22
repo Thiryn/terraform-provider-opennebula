@@ -292,6 +292,6 @@ func resourceOpennebulaVirtualRouterNICDelete(ctx context.Context, d *schema.Res
 		return diags
 	}
 
-	log.Printf("[INFO] Successfully detached virtual router NIC\n")
+	log.Printf("[INFO] Successfully detached virtual router NIC (ID: %s)\n", d.Id())
 	return nil
 }

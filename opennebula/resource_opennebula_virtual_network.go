@@ -1694,6 +1694,9 @@ func resourceOpennebulaVirtualNetworkDelete(ctx context.Context, d *schema.Resou
 	}
 	log.Printf("[INFO] Successfully released reservered IP addresses.")
 
+	vn, _ := vnc.Info(true)
+	log.Printf("[INFO] VNDEBUG %v", vn)
+
 	err = vnc.Delete()
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -1716,7 +1719,7 @@ func resourceOpennebulaVirtualNetworkDelete(ctx context.Context, d *schema.Resou
 		return diags
 	}
 
-	log.Printf("[INFO] Successfully deleted Vnet\n")
+	log.Printf("[INFO] Successfully deleted Vnet (ID: %s)\n", d.Id())
 	return nil
 }
 
