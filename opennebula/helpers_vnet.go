@@ -193,3 +193,22 @@ func vNetARRemove(ctx context.Context, oneVersion *version.Version, timeout time
 
 	return nil
 }
+
+// isVNetIPFree returns true when the given IP free to be leased in the network, returns false when the IP is leased
+func isVNetIPFree(controller *goca.Controller, ip string, vNetID int) (bool, error) {
+	vnc := controller.VirtualNetwork(vNetID)
+	vNetInfos, err := vnc.Info(false)
+	if err != nil {
+		return false, err
+	}
+
+	for _, ar := range vNetInfos.ARs {
+		for _, leases := range ar.Leases {
+			if leases.IP == ip {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}
+

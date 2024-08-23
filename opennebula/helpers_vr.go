@@ -162,7 +162,7 @@ func isVRNICAttached(controller *goca.Controller, vrID, nicID int) (bool, error)
 }
 
 // vrNICDetach is an helper that synchronously detach a NIC
-func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Controller, vrID int, nicID int) error {
+func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Controller, vrID, nicID, vNetID int, ip string) error {
 
 	vrc := controller.VirtualRouter(vrID)
 
@@ -211,7 +211,6 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 		if attached {
 			return resource.RetryableError(fmt.Errorf("NIC %d: not detached", nicID))
 		}
-
 		return nil
 	})
 
@@ -219,5 +218,24 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 		return err
 	}
 
+	// If there was no IP specified, don't check for the release
+	if ip == "" {
+		return nil
+	}
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+		isIpFree, err := isVNetIPFree(controller, ip, vNetID)
+		if err != nil {
+			return resource.RetryableError(err)
+		}
+
+		if !isIpFree {
+			return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released", ip, nicID, vNetID))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
 	return nil
 }

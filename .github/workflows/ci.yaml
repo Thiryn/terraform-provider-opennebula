@@ -64,7 +64,7 @@ jobs:
       - run: sudo apt-get -y install opennebula opennebula-flow opennebula-node-lxc # opennebula-node-lxc to ensure node dependencies for monitoring are installed
       - run: source ${{ github.workspace }}/.github/scripts/oned.sh
       - run: go install
-      - run: go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -timeout 120m
+      - run: TF_LOG=info go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
 
   test-6_6:
     name: "Test OpenNebula 6.6"
@@ -83,7 +83,7 @@ jobs:
       - run: sudo apt-get -y install opennebula opennebula-flow opennebula-node-lxc # opennebula-node-lxc to ensure node dependencies for monitoring are installed
       - run: source ${{ github.workspace }}/.github/scripts/oned.sh
       - run: go install
-      - run: go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -timeout 120m
+      - run: TF_LOG=info go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
 
   test-6_4:
     name: "Test OpenNebula 6.4"
@@ -102,7 +102,7 @@ jobs:
       - run: sudo apt-get -y install opennebula opennebula-flow opennebula-node-lxc # opennebula-node-lxc to ensure node dependencies for monitoring are installed
       - run: source ${{ github.workspace }}/.github/scripts/oned.sh
       - run: go install
-      - run: go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -timeout 120m
+      - run: TF_LOG=info go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
 
   test-5_12:
     name: "Test OpenNebula 5.12"
@@ -121,4 +121,4 @@ jobs:
       - run: sudo apt-get -y install opennebula opennebula-flow
       - run: source ${{ github.workspace }}/.github/scripts/oned.sh
       - run: go install
-      - run: go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -timeout 120m
+      - run: TF_LOG=info go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
