@@ -272,7 +272,7 @@ func resourceOpennebulaVirtualRouterNICDelete(ctx context.Context, d *schema.Res
 	defer config.mutex.Unlock(nicKey)
 
 	// wait before checking NIC
-	err := vrNICDetach(ctx, d.Timeout(schema.TimeoutCreate), controller, vRouterID, d.Id())
+	err := vrNICDetach(ctx, d.Timeout(schema.TimeoutCreate), controller, d, vRouterID)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
