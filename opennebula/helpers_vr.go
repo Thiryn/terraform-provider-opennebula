@@ -181,7 +181,7 @@ func getIPUsedByNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualR
 		return nil, fmt.Errorf("Failed to get NIC details %w\n", err)
 	}
 	ipUsedByNIC := map[string]bool{}
-	if ip := nicData.Get("IP").(string); ip != "" {
+	if ip := nicData.Get("ip").(string); ip != "" {
 		ipUsedByNIC[ip] = true
 	}
 	for _, vmID := range vrInfos.VMs.ID {
