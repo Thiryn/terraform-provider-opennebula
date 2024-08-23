@@ -3,6 +3,9 @@ package opennebula
 import (
 	"context"
 	"fmt"
+	"github.com/OpenNebula/one/src/oca/go/src/goca/schemas/virtualrouter"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -161,10 +164,53 @@ func isVRNICAttached(controller *goca.Controller, vrID, nicID int) (bool, error)
 	return false, nil
 }
 
+func getIPUsedByNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualRouter, nicData *schema.ResourceData) (map[string]bool, error) {
+	// get the nic ID from the nic list
+	var nic *shared.NIC
+
+	nics := vrInfos.Template.GetNICs()
+	for _, n := range nics {
+		id, _ := n.Get(shared.NICID)
+		if id == nicData.Id() {
+			nic = &n
+			break
+		}
+	}
+	nicVRouterMac, err := nic.GetStr("VROUTER_MAC")
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get NIC details %w\n", err)
+	}
+	ipUsedByNIC := map[string]bool{}
+	if ip := nicData.Get("IP").(string); ip != "" {
+		ipUsedByNIC[ip] = true
+	}
+	for _, vmID := range vrInfos.VMs.ID {
+		vmInfo, err := controller.VM(vmID).Info(false)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get VM details (ID: %d) %w\n", vmID, err)
+		}
+		vmInfo.Template.GetNICs()
+		for _, n := range nics {
+			vrouterMac, _ := n.Get("VROUTER_MAC")
+			if vrouterMac == nicVRouterMac {
+				if ip, _ := n.Get(shared.IP); ip != "" {
+					ipUsedByNIC[ip] = true
+				}
+				// VROUTER_IP is used for storing Floating IPs
+				if ip, _ := n.Get("VROUTER_IP"); ip != "" {
+					ipUsedByNIC[ip] = true
+				}
+			}
+		}
+	}
+	return ipUsedByNIC, nil
+}
+
 // vrNICDetach is an helper that synchronously detach a NIC
-func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Controller, vrID, nicID, vNetID int, ip string) error {
+func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Controller, nicData *schema.ResourceData, vrID int) error {
 
 	vrc := controller.VirtualRouter(vrID)
+	vNetID := nicData.Get("network_id").(int)
 
 	vrInfos, err := vrc.Info(false)
 	if err != nil {
@@ -196,14 +242,23 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 		}
 	}
 
-	err = vrc.DetachNic(nicID)
+	nicID, err := strconv.ParseInt(nicData.Id(), 10, 0)
+	if err != nil {
+		return fmt.Errorf("Failed to parse NIC ID %w\n", err)
+	}
+	ipUsedByNIC, err := getIPUsedByNIC(controller, vrInfos, nicData)
+	if err != nil {
+		return fmt.Errorf("Failed to retrieve IPs used by NIC %w\n", err)
+	}
+
+	err = vrc.DetachNic(int(nicID))
 	if err != nil {
 		return fmt.Errorf("can't detach NIC %d: %s\n", nicID, err)
 	}
 
 	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 
-		attached, err := isVRNICAttached(controller, vrID, nicID)
+		attached, err := isVRNICAttached(controller, vrID, int(nicID))
 		if err != nil {
 			return resource.RetryableError(err)
 		}
@@ -217,20 +272,24 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 	if err != nil {
 		return err
 	}
+	log.Printf("[INFO] waiting for %d IPs to be released\n", len(ipUsedByNIC))
 
-	// If there was no IP specified, don't check for the release
-	if ip == "" {
-		return nil
-	}
 	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
-		isIpFree, err := isVNetIPFree(controller, ip, vNetID)
-		if err != nil {
-			return resource.RetryableError(err)
-		}
-
-		if !isIpFree {
+		for ip, free := range ipUsedByNIC {
+			if free {
+				continue
+			}
+			isIpFree, err := isVNetIPFree(controller, ip, vNetID)
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+			if isIpFree {
+				log.Printf("[DEBUG] IP %s has been released\n", ip)
+				ipUsedByNIC[ip] = false
+			}
 			return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released", ip, nicID, vNetID))
 		}
+		log.Printf("[DEBUG] All IPs have been released\n")
 		return nil
 	})
 

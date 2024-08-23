@@ -145,11 +145,6 @@ func resourceOpennebulaVirtualRouterNICCreate(ctx context.Context, d *schema.Res
 
 	if v, ok := d.GetOk("ip"); ok {
 		nicTpl.Add("IP", v.(string))
-		isFree, err := isVNetIPFree(controller, v.(string), vnetID)
-		fmt.Printf("[DEBUG][IP] is IP %s free: %v: %v\n", v.(string), isFree, err)
-		vnc := controller.VirtualNetwork(vnetID)
-		vNetInfos, err := vnc.Info(false)
-		fmt.Printf("[DEBUG][IP] VNET %v: %v\n", vNetInfos, err)
 	}
 
 	// wait before checking NIC
@@ -266,8 +261,6 @@ func resourceOpennebulaVirtualRouterNICDelete(ctx context.Context, d *schema.Res
 	config := meta.(*Configuration)
 	controller := config.Controller
 	vRouterID := d.Get("virtual_router_id").(int)
-	ip := d.Get("ip").(string)
-	vNetID := d.Get("network_id").(int)
 
 	// avoid creation of multiple NICs and instances at the same time
 	nicKey := &SubResourceKey{
@@ -278,18 +271,8 @@ func resourceOpennebulaVirtualRouterNICDelete(ctx context.Context, d *schema.Res
 	config.mutex.Lock(nicKey)
 	defer config.mutex.Unlock(nicKey)
 
-	nicID, err := strconv.ParseInt(d.Id(), 10, 0)
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Failed to parse virtual router ID",
-			Detail:   fmt.Sprintf("virtual router NIC (ID: %s): %s", d.Id(), err),
-		})
-		return diags
-	}
-
 	// wait before checking NIC
-	err = vrNICDetach(ctx, d.Timeout(schema.TimeoutCreate), controller, vRouterID, int(nicID), vNetID, ip)
+	err := vrNICDetach(ctx, d.Timeout(schema.TimeoutCreate), controller, vRouterID, d.Id())
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
