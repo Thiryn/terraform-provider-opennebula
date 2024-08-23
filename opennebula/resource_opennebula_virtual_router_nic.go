@@ -145,6 +145,11 @@ func resourceOpennebulaVirtualRouterNICCreate(ctx context.Context, d *schema.Res
 
 	if v, ok := d.GetOk("ip"); ok {
 		nicTpl.Add("IP", v.(string))
+		isFree, err := isVNetIPFree(controller, v.(string), vnetID)
+		fmt.Printf("[DEBUG][IP] is IP %s free: %v: %v\n", isFree, err)
+		vnc := controller.VirtualNetwork(vnetID)
+		vNetInfos, err := vnc.Info(false)
+		fmt.Printf("[DEBUG][IP] VNET %v: %v\n", vNetInfos, err)
 	}
 
 	// wait before checking NIC
