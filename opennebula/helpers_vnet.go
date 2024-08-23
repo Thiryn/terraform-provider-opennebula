@@ -211,4 +211,3 @@ func isVNetIPFree(controller *goca.Controller, ip string, vNetID int) (bool, err
 	}
 	return true, nil
 }
-
