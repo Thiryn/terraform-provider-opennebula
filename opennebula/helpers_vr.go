@@ -214,7 +214,7 @@ func getIPUsedByVRouterNIC(controller *goca.Controller, vrInfos *virtualrouter.V
 func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Controller, nicData *schema.ResourceData, vrID int) error {
 
 	vrc := controller.VirtualRouter(vrID)
-	vNetID := nicData.Get("network_id").(int)
+	//vNetID := nicData.Get("network_id").(int)
 
 	vrInfos, err := vrc.Info(false)
 	if err != nil {
@@ -250,10 +250,10 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 	if err != nil {
 		return fmt.Errorf("Failed to parse NIC ID %w\n", err)
 	}
-	ipUsedByNIC, err := getIPUsedByVRouterNIC(controller, vrInfos, nicData)
-	if err != nil {
-		return fmt.Errorf("Failed to retrieve IPs used by NIC %w\n", err)
-	}
+	//ipUsedByNIC, err := getIPUsedByVRouterNIC(controller, vrInfos, nicData)
+	//if err != nil {
+	//	return fmt.Errorf("Failed to retrieve IPs used by NIC %w\n", err)
+	//}
 
 	err = vrc.DetachNic(int(nicID))
 	if err != nil {
@@ -276,29 +276,29 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 	if err != nil {
 		return err
 	}
-	log.Printf("[INFO] waiting for %d IPs to be released\n", len(ipUsedByNIC))
-
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
-		for ip, free := range ipUsedByNIC {
-			if free {
-				continue
-			}
-			isIpFree, err := isVNetIPFree(controller, ip, vNetID)
-			if err != nil {
-				return resource.RetryableError(err)
-			}
-			if isIpFree {
-				log.Printf("[DEBUG] IP %s has been released\n", ip)
-				ipUsedByNIC[ip] = false
-			}
-			return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released yet", ip, nicID, vNetID))
-		}
-		log.Printf("[DEBUG] All IPs have been released\n")
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
+	//log.Printf("[INFO] waiting for %d IPs to be released\n", len(ipUsedByNIC))
+	//
+	//err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	//	for ip, free := range ipUsedByNIC {
+	//		if free {
+	//			continue
+	//		}
+	//		isIpFree, err := isVNetIPFree(controller, ip, vNetID)
+	//		if err != nil {
+	//			return resource.RetryableError(err)
+	//		}
+	//		if isIpFree {
+	//			log.Printf("[INFO] IP %s has been released\n", ip)
+	//			ipUsedByNIC[ip] = false
+	//		}
+	//		return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released yet", ip, nicID, vNetID))
+	//	}
+	//	log.Printf("[INFO] All IPs have been released\n")
+	//	return nil
+	//})
+	//
+	//if err != nil {
+	//	return err
+	//}
 	return nil
 }
