@@ -2,6 +2,7 @@ package opennebula
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/OpenNebula/one/src/oca/go/src/goca/schemas/virtualrouter"
 	"log"
@@ -177,6 +178,8 @@ func getIPUsedByNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualR
 		}
 	}
 	nicVRouterMac, err := nic.GetStr("VROUTER_MAC")
+	nicJson, _ := json.Marshal(nic)
+	log.Printf("[DEBUG][NIC] %s", nicJson)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get NIC details %w\n", err)
 	}
