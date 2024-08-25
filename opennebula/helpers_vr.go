@@ -165,7 +165,7 @@ func isVRNICAttached(controller *goca.Controller, vrID, nicID int) (bool, error)
 	return false, nil
 }
 
-func getIPUsedByNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualRouter, nicData *schema.ResourceData) (map[string]bool, error) {
+func getIPUsedByVRouterNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualRouter, nicData *schema.ResourceData) (map[string]bool, error) {
 	// get the nic ID from the nic list
 	var nic *shared.NIC
 
@@ -177,12 +177,13 @@ func getIPUsedByNIC(controller *goca.Controller, vrInfos *virtualrouter.VirtualR
 			break
 		}
 	}
-	nicVRouterMac, err := nic.GetStr("VROUTER_MAC")
+	nicVRouterMac, _ := nic.GetStr("VROUTER_MAC")
+	if nicVRouterMac == "" {
+		log.Printf("[INFO] NIC (ID: %s) does not have a VROUTER_MAC", nicData.Id())
+		return map[string]bool{}, nil
+	}
 	nicJson, _ := json.Marshal(nic)
 	log.Printf("[DEBUG][NIC] %s", nicJson)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get NIC details %w\n", err)
-	}
 	ipUsedByNIC := map[string]bool{}
 	if ip := nicData.Get("ip").(string); ip != "" {
 		ipUsedByNIC[ip] = true
@@ -249,7 +250,7 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 	if err != nil {
 		return fmt.Errorf("Failed to parse NIC ID %w\n", err)
 	}
-	ipUsedByNIC, err := getIPUsedByNIC(controller, vrInfos, nicData)
+	ipUsedByNIC, err := getIPUsedByVRouterNIC(controller, vrInfos, nicData)
 	if err != nil {
 		return fmt.Errorf("Failed to retrieve IPs used by NIC %w\n", err)
 	}
@@ -290,7 +291,7 @@ func vrNICDetach(ctx context.Context, timeout time.Duration, controller *goca.Co
 				log.Printf("[DEBUG] IP %s has been released\n", ip)
 				ipUsedByNIC[ip] = false
 			}
-			return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released", ip, nicID, vNetID))
+			return resource.RetryableError(fmt.Errorf("IP '%s' for NIC %d on VNet %d has not been released yet", ip, nicID, vNetID))
 		}
 		log.Printf("[DEBUG] All IPs have been released\n")
 		return nil

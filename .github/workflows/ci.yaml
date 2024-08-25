@@ -64,7 +64,7 @@ jobs:
       - run: sudo apt-get -y install opennebula opennebula-flow opennebula-node-lxc # opennebula-node-lxc to ensure node dependencies for monitoring are installed
       - run: source ${{ github.workspace }}/.github/scripts/oned.sh
       - run: go install
-      - run: TF_LOG=debug go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
+      - run: TF_LOG=info go test $(go list ./... | grep -v 'vendor') -v ${TESTARGS} -run TestAccVirtualRouter -timeout 120m
 
 #  test-6_6:
 #    name: "Test OpenNebula 6.6"
